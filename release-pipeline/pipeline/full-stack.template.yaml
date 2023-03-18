@@ -14,6 +14,12 @@ Parameters:
     Type: String
     AllowedPattern: (\d{12}|^$)
     ConstraintDescription: Must be an AWS account ID
+  S3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: Key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start with forward slash (/) because that is automatically appended.
+    Default: serverless-enterprise-cicd/
+    Description: S3 key prefix for the release pipeline assets. Key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start with forward slash (/) because that is automatically appended. It will typically end with a forward slash.
+    Type: String
 
 Conditions:
   UsingDefaultBucket: !Equals [!Ref S3BucketName, 'release-pipeline']
