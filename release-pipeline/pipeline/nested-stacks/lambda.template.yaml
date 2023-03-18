@@ -557,3 +557,69 @@ Resources:
                       return cfnresponse.send(event, context, cfnresponse.FAILED, {})
               else:
                   return cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+
+  CodecommitCredentialsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: CodecommitCredentialsLambda
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+              - iam:*
+            Resource:
+              - !Sub arn:aws:iam::${AWS::AccountId}:user/AWS-CICD-Release-Pipeline-${AppName}-${AWS::Region}-${AWS::AccountId}
+
+  CodecommitCredentialsLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt CodecommitCredentialsLambdaRole.Arn
+      Runtime: python3.6
+      Timeout: 30
+      Code:
+        ZipFile: |
+          import json
+          import cfnresponse
+          import boto3
+          from botocore.exceptions import ClientError
+          client = boto3.client('iam')
+          def handler(event, context):
+              print(json.dumps(event))
+              UserName = event['ResourceProperties']['IAM_USER_NAME']
+              if event['RequestType'] == 'Create':
+                  try:
+                      credential = client.create_service_specific_credential(UserName=UserName, ServiceName='codecommit.amazonaws.com')['ServiceSpecificCredential']
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {'UserName': credential['ServiceUserName'], 'Password': credential['ServicePassword']})
+                  except ClientError as e:
+                      print(e)
+                      return cfnresponse.send(event, context, cfnresponse.FAILED, {})
+              if event['RequestType'] == 'Delete':
+                  try:
+                      for credential in client.list_service_specific_credentials(UserName=UserName, ServiceName='codecommit.amazonaws.com')['ServiceSpecificCredentials']:
+                          client.delete_service_specific_credential(UserName=UserName, ServiceSpecificCredentialId=credential['ServiceSpecificCredentialId'])
+                      for key in client.list_ssh_public_keys(UserName=UserName)['SSHPublicKeys']:
+                          client.delete_ssh_public_key(UserName=UserName, SSHPublicKeyId=key['SSHPublicKeyId'])
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                  except ClientError as e:
+                      print(e)
+                      return cfnresponse.send(event, context, cfnresponse.FAILED, {})
+              else:
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
