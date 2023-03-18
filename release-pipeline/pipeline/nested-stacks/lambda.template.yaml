@@ -387,3 +387,63 @@ Resources:
                   future.result()
 
               return
+  DynamicPipelineMakerLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: DynamicPipelineCleanup
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+              - cloudformation:CreateStack
+              - cloudformation:DescribeStacks
+              - cloudformation:DeleteStack
+            Resource: !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ParentStackName}*/*
+          - Effect: Allow
+            Action:
+              - codebuild:CreateProject
+              - codebuild:DeleteProject
+            Resource:
+              - !Sub arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/DeployDevProject-*
+              - !Sub arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/SmokeTestDevProject-*
+              - !Sub arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/BuildProject-*
+          - Effect: Allow
+            Action:
+              - iam:PassRole
+            Resource:
+              - !Ref PipelineServiceRoleArn
+              - !Sub arn:aws:iam::${DevAwsAccountId}:role/CodePipelineDeploymentRole-${AWS::Region}-${DevAwsAccountId}-dev
+              - !Sub arn:aws:iam::${DevAwsAccountId}:role/CodePipelineServiceRole-${AWS::Region}-${DevAwsAccountId}-dev
+          - Effect: Allow
+            Action:
+              - codepipeline:CreatePipeline
+              - codepipeline:GetPipeline
+              - codepipeline:GetPipelineState
+              - codepipeline:DeletePipeline
+            Resource: !Sub arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${ParentStackName}*
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: !GetAtt DynamicPipelineCleanupLambda.Arn
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource:
+              - !Sub arn:aws:s3:::${S3BucketName}/${S3KeyPrefix}*
