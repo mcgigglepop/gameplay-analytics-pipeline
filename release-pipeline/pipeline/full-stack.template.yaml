@@ -3,6 +3,16 @@ Description: >
   Master template refers to sub-templates
 Metadata:
 Parameters:
+  DevAwsAccountId:
+    Description: AWS account ID for development account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
+  ProdAwsAccountId:
+    Description: AWS account ID for production account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
 Conditions:
 
 Resources:
