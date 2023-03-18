@@ -1,2 +1,2 @@
 # gameplay-analytics-pipeline
-Serverless analytics pipeline that provides a solution for ingesting telemetry events from games and backend services
+The gameplay-analytics-pipeline is a serverless analytics pipeline that provides a solution for ingesting telemetry events from games and backend services. This application has been extended from the [Implementation Guide](https://docs.aws.amazon.com/solutions/latest/game-analytics-pipeline/welcome.html) from AWS and includes additional features such as a user-interface for accessing the solution API and a build/release pipeline. Changes are made incrementally and can be accesed via the release notes section of this repository. 
