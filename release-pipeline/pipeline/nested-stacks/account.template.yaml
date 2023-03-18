@@ -203,3 +203,35 @@ Resources:
           - ServerSideEncryptionByDefault:
               KMSMasterKeyID: !Sub ${ArtifactBucketKey.Arn}
               SSEAlgorithm: aws:kms
+  ArtifactBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ArtifactBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:*
+            Effect: Allow
+            Resource:
+              - !GetAtt ArtifactBucket.Arn
+              - !Sub ${ArtifactBucket.Arn}/*
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::${AWS::AccountId}:root
+          - Action:
+              - s3:GetObject
+              - s3:ListBucket
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:s3:::${ArtifactBucket}
+              - !Sub arn:aws:s3:::${ArtifactBucket}/*
+            Principal:
+              AWS:
+                - !If
+                  - AddDevAccountPermissions
+                  - !Sub arn:aws:iam::${DevAwsAccountId}:root
+                  - !Ref AWS::NoValue
+                - !If
+                  - AddProdAccountPermissions
+                  - !Sub arn:aws:iam::${ProdAwsAccountId}:root
+                  - !Ref AWS::NoValue
