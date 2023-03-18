@@ -16,6 +16,11 @@ Parameters:
     ConstraintDescription: Must be an AWS account ID
     Default: '159527342995'
 
+Conditions:
+  AddDevAccountPermissions: !Not [!Equals [ !Ref DevAwsAccountId, '' ]]
+  AddProdAccountPermissions: !And [!Not [!Equals [ !Ref ProdAwsAccountId, '' ]],
+                                   !Not [!Equals [ !Ref DevAwsAccountId, !Ref ProdAwsAccountId  ]]]
+
 Resources:
   SamBucket:
     DependsOn: ArtifactBucketKey
@@ -26,6 +31,7 @@ Resources:
           - ServerSideEncryptionByDefault:
               KMSMasterKeyID: !Sub ${ArtifactBucketKey.Arn}
               SSEAlgorithm: aws:kms
+
   SamBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -58,6 +64,7 @@ Resources:
                   - AddProdAccountPermissions
                   - !Sub arn:aws:iam::${ProdAwsAccountId}:root
                   - !Ref AWS::NoValue
+
   PipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -76,6 +83,14 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              - Resource: '*'
+                Effect: Allow
+                Action:
+                    - codecommit:GetBranch
+                    - codecommit:GetCommit
+                    - codecommit:UploadArchive
+                    - codecommit:GetUploadArchiveStatus
+                    - codecommit:CancelUploadArchive
               - Resource: '*'
                 Effect: Allow
                 Action:
@@ -106,6 +121,7 @@ Resources:
                 Effect: Allow
                 Action:
                     - cloudformation:ListExports
+
   PipelineServiceRoleS3Policy:
     Type: AWS::IAM::Policy
     Properties: 
@@ -126,6 +142,7 @@ Resources:
       PolicyName: PipelineServiceRoleS3Policy
       Roles:
         - !Ref PipelineServiceRole
+
   ArtifactBucketKey:
     Type: AWS::KMS::Key
     Properties:
@@ -189,11 +206,13 @@ Resources:
                 kms:ViaService: !Sub s3.${AWS::Region}.amazonaws.com
                 kms:CallerAccount:
                   - !Ref AWS::AccountId
+
   ArtifactBucketAlias:
     Type: AWS::KMS::Alias
     Properties:
       AliasName: alias/artifact-bucket
       TargetKeyId: !Ref ArtifactBucketKey
+
   ArtifactBucket:
     DependsOn: ArtifactBucketKey
     Type: AWS::S3::Bucket
@@ -203,6 +222,7 @@ Resources:
           - ServerSideEncryptionByDefault:
               KMSMasterKeyID: !Sub ${ArtifactBucketKey.Arn}
               SSEAlgorithm: aws:kms
+
   ArtifactBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
