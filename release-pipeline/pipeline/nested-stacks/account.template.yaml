@@ -235,3 +235,23 @@ Resources:
                   - AddProdAccountPermissions
                   - !Sub arn:aws:iam::${ProdAwsAccountId}:root
                   - !Ref AWS::NoValue
+
+Outputs:
+  SamTranslationBucket:
+    Description: Bucket used when packaging SAM templates
+    Value: !Ref SamBucket
+  PipelineArtifactBucket:
+    Description: Artifact bucket for all pipelines
+    Value: !Ref ArtifactBucket
+  PipelineServiceRoleArn:
+    Description: ARN of the IAM role used by CodePipeline and CodeBuild in this account
+    Value: !GetAtt PipelineServiceRole.Arn
+  ArtifactBucketKeyArn:
+    Description: KMS key for codepipelines and artifacts
+    Value: !GetAtt ArtifactBucketKey.Arn
+  ArtifactBucketKeyId:
+    Description: KMS key ID for codepipelines and artifacts
+    Value: !Ref ArtifactBucketKey
+  ArtifactBucketAliasName:
+    Description: KMS key alias for codepipelines and artifacts
+    Value: !Ref ArtifactBucketAlias
