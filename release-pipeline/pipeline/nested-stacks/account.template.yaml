@@ -64,3 +64,60 @@ Resources:
                   - AddProdAccountPermissions
                   - !Sub arn:aws:iam::${ProdAwsAccountId}:root
                   - !Ref AWS::NoValue
+
+  PipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - codepipeline.amazonaws.com
+              - codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Resource: '*'
+                Effect: Allow
+                Action:
+                    - codecommit:GetBranch
+                    - codecommit:GetCommit
+                    - codecommit:UploadArchive
+                    - codecommit:GetUploadArchiveStatus
+                    - codecommit:CancelUploadArchive
+              - Resource: '*'
+                Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:ReEncrypt*
+                  - kms:GenerateDataKey*
+                  - kms:DescribeKey
+                  - sns:Publish
+                  - lambda:Invoke*
+                  - Lambda:List*
+              - Resource: '*'
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ecr:GetAuthorizationToken
+              - Effect: Allow
+                Action:
+                  - sts:AssumeRole
+                Resource:
+                  - !Sub arn:aws:iam::${DevAwsAccountId}:role/CodePipelineServiceRole-${AWS::Region}-${DevAwsAccountId}-dev
+                  - !Sub arn:aws:iam::${ProdAwsAccountId}:role/CodePipelineServiceRole-${AWS::Region}-${ProdAwsAccountId}-prod
+              - Resource: '*'
+                Effect: Allow
+                Action:
+                    - cloudformation:ListExports
