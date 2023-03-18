@@ -4,6 +4,10 @@ Description: >
 Metadata:
 
 Parameters:
+  AppName:
+    Description: Application name, used for the repository and child stack name
+    Type: String
+    Default: release-pipeline
   DevAwsAccountId:
     Description: AWS account ID for development account
     Type: String
@@ -44,5 +48,30 @@ Resources:
       TemplateURL: !Sub 
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${S3KeyPrefix}templates/account.template.yaml
         - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref S3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${S3BucketName}-${AWS::Region}', !Ref S3BucketName]
+      TimeoutInMinutes: 60
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        DevAwsAccountId: !Ref DevAwsAccountId
+        ProdAwsAccountId: !Ref ProdAwsAccountId
+        PipelineServiceRoleArn: !GetAtt 
+          - AccountStack
+          - Outputs.PipelineServiceRoleArn
+        AppName: !Ref AppName
+        ParentStackName: !Ref AWS::StackName
+        QSS3BucketName: !Ref S3BucketName
+        QSS3BucketRegion: !Ref S3BucketRegion
+        QSS3KeyPrefix: !Ref S3KeyPrefix
+        ArtifactBucket: !GetAtt 
+          - AccountStack
+          - Outputs.PipelineArtifactBucket
+        SamTranslationBucket: !GetAtt 
+          - AccountStack
+          - Outputs.SamTranslationBucket
+      TemplateURL: !Sub 
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${S3KeyPrefix}templates/lambda.template.yaml 
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref S3BucketRegion]      
           S3Bucket: !If [UsingDefaultBucket, !Sub '${S3BucketName}-${AWS::Region}', !Ref S3BucketName]
       TimeoutInMinutes: 60
