@@ -499,3 +499,61 @@ Resources:
                   future.result()
 
               return
+
+  CleanUpBucketsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: CleanUpBucketsLambda
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - !Sub arn:aws:s3:::${ArtifactBucket}
+              - !Sub arn:aws:s3:::${ArtifactBucket}/*
+              - !Sub arn:aws:s3:::${SamTranslationBucket}
+              - !Sub arn:aws:s3:::${SamTranslationBucket}/*
+
+  CleanUpBucketsLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt CleanUpBucketsLambdaRole.Arn
+      Runtime: python3.6
+      Timeout: 30
+      Code:
+        ZipFile: |
+          import json
+          import cfnresponse
+          import boto3
+          from botocore.exceptions import ClientError
+          s3 = boto3.resource('s3')
+          def handler(event, context):
+              bucket = s3.Bucket(event['ResourceProperties']['Bucket'])
+              if event['RequestType'] == 'Delete':
+                  try:
+                      bucket.objects.all().delete()
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                  except ClientError as e:
+                      print(e)
+                      return cfnresponse.send(event, context, cfnresponse.FAILED, {})
+              else:
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
