@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Common resources for the shared services account
+
+Parameters:
+  DevAwsAccountId:
+    Description: AWS account ID for development account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
+    Default: '159527342995'
+  ProdAwsAccountId:
+    Description: AWS account ID for production account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
+    Default: '159527342995'
