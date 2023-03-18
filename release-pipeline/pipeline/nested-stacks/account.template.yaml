@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Common resources for the shared services account
+
+Parameters:
+  DevAwsAccountId:
+    Description: AWS account ID for development account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
+    Default: '159527342995'
+  ProdAwsAccountId:
+    Description: AWS account ID for production account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
+    Default: '159527342995'
+
+Conditions:
+  AddDevAccountPermissions: !Not [!Equals [ !Ref DevAwsAccountId, '' ]]
+  AddProdAccountPermissions: !And [!Not [!Equals [ !Ref ProdAwsAccountId, '' ]],
+                                   !Not [!Equals [ !Ref DevAwsAccountId, !Ref ProdAwsAccountId  ]]]
+
+Resources:
+  SamBucket:
+    DependsOn: ArtifactBucketKey
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: !Sub ${ArtifactBucketKey.Arn}
+              SSEAlgorithm: aws:kms
