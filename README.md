@@ -26,3 +26,6 @@ Deploys AWS resources to ingest game data from game clients, game servers, and o
 * Streaming ingestion—Kinesis Data Firehose consumes data from Kinesis Data Streams and invokes AWS Lambda with batches of events for serverless data processing and transformation before the data is delivered to Amazon S3.
 * Data lake integration and ETL—Amazon S3 provides storage for raw and processed data. AWS Glue provides ETL processing workflows and metadata storage in the AWS Glue Data Catalog, which provides the basis for a data lake for integration with flexible analytics tools.
 * Interactive analytics—Sample Amazon Athena queries are deployed to provide analysis of game events. Instructions for integrating with Amazon QuickSight are provided in the Automated Deployment section.
+  
+## Testing the Pipeline
+The demo script generates example game events that represent a variety of common types of player actions in a game. These events are batched and automatically sent to Kinesis Data Streams for testing the solution functionality. In total, this solution enables the ingestion, analysis, monitoring, and reporting of game analytics data—setting up the infrastructure to support a serverless data pipeline.
