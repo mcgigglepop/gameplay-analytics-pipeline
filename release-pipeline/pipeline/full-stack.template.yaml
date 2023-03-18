@@ -2,6 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: >
   Master template refers to sub-templates
 Metadata:
+
 Parameters:
   DevAwsAccountId:
     Description: AWS account ID for development account
@@ -13,7 +14,9 @@ Parameters:
     Type: String
     AllowedPattern: (\d{12}|^$)
     ConstraintDescription: Must be an AWS account ID
+
 Conditions:
+  UsingDefaultBucket: !Equals [!Ref S3BucketName, 'release-pipeline']
 
 Resources:
   AccountStack:
