@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Custom Lambda function resources to operate on cross-account resources
+  and dynamically create pipelines.
+
+Parameters:
+  DevAwsAccountId:
+    Description: AWS account ID for development account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
+  ProdAwsAccountId:
+    Description: AWS account ID for production account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
+  AppName:
+    Description: Application name, used for the repository and child stack name
+    Type: String
+    Default: Sample
+  RPS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: Release Pipeline bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Default: chaotic-skyfire-diamond
+    Description: S3 bucket name for the Release Pipeline assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)
+    Type: String
+  RPS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Release Pipeline S3 bucket (RPS3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Type: String
+  RPS3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: AWS Release Pipeline key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended.
+    Default: cicd-serverless
+    Description: S3 key prefix for the AWS Release Pipeline assets. AWS Release Pipeline key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with forward slash (/) because they are automatically appended
+    Type: String
+  PipelineServiceRoleArn:
+    Description: Pipeline service role ARN
+    Type: String
+  ArtifactBucket:
+    Description: Artifact bucket
+    Type: String
+  SamTranslationBucket:
+    Description: S3 bucket for SAM translations
+    Type: String
+  ParentStackName:
+    Description: The name of the Parent Stack
+    Type: String
+
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref RPS3BucketName, 'chaotic-skyfire-diamond']
