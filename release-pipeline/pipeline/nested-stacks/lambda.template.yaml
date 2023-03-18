@@ -623,3 +623,15 @@ Resources:
                       return cfnresponse.send(event, context, cfnresponse.FAILED, {})
               else:
                   return cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+
+Outputs:
+  QuickStartStackMakerLambda:
+    Value: !GetAtt QuickStartStackMakerLambda.Arn
+  DynamicPipelineCleanupLambda:
+    Value: !GetAtt DynamicPipelineCleanupLambda.Arn
+  DynamicPipelineMakerLambda:
+    Value: !GetAtt DynamicPipelineMakerLambda.Arn
+  CleanUpBucketsLambda:
+    Value: !GetAtt CleanUpBucketsLambda.Arn
+  CodecommitCredentialsLambda:
+    Value: !GetAtt CodecommitCredentialsLambda.Arn
