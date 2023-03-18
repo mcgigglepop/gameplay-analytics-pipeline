@@ -20,6 +20,16 @@ Parameters:
     Default: serverless-enterprise-cicd/
     Description: S3 key prefix for the release pipeline assets. Key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start with forward slash (/) because that is automatically appended. It will typically end with a forward slash.
     Type: String
+  S3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Default: release-pipeline
+    Description: S3 bucket name for the release pipeline assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)
+    Type: String
+  S3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the release pipeline bucket (S3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Type: String
 
 Conditions:
   UsingDefaultBucket: !Equals [!Ref S3BucketName, 'release-pipeline']
