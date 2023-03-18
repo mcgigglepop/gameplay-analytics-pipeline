@@ -15,3 +15,14 @@ Parameters:
     AllowedPattern: (\d{12}|^$)
     ConstraintDescription: Must be an AWS account ID
     Default: '159527342995'
+
+Resources:
+  SamBucket:
+    DependsOn: ArtifactBucketKey
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: !Sub ${ArtifactBucketKey.Arn}
+              SSEAlgorithm: aws:kms
