@@ -206,3 +206,19 @@ Resources:
                 kms:ViaService: !Sub s3.${AWS::Region}.amazonaws.com
                 kms:CallerAccount:
                   - !Ref AWS::AccountId
+
+  ArtifactBucketAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/artifact-bucket
+      TargetKeyId: !Ref ArtifactBucketKey
+
+  ArtifactBucket:
+    DependsOn: ArtifactBucketKey
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: !Sub ${ArtifactBucketKey.Arn}
+              SSEAlgorithm: aws:kms
