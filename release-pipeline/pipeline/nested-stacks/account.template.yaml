@@ -121,3 +121,24 @@ Resources:
                 Effect: Allow
                 Action:
                     - cloudformation:ListExports
+
+  PipelineServiceRoleS3Policy:
+    Type: AWS::IAM::Policy
+    Properties: 
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Resource:
+              - !GetAtt ArtifactBucket.Arn
+              - !Sub ${ArtifactBucket.Arn}/*
+              - !GetAtt SamBucket.Arn
+              - !Sub ${SamBucket.Arn}/*
+            Effect: Allow
+            Action:
+                - s3:PutObject
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:GetBucketVersioning
+      PolicyName: PipelineServiceRoleS3Policy
+      Roles:
+        - !Ref PipelineServiceRole
