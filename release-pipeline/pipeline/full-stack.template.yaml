@@ -1,3 +1,19 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
   Master template refers to sub-templates
+Metadata:
+Parameters:
+Conditions:
+
+Resources:
+  AccountStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        DevAwsAccountId: !Ref DevAwsAccountId
+        ProdAwsAccountId: !Ref ProdAwsAccountId
+      TemplateURL: !Sub 
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${S3KeyPrefix}templates/account.template.yaml
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref S3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${S3BucketName}-${AWS::Region}', !Ref S3BucketName]
+      TimeoutInMinutes: 60
